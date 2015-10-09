@@ -9,6 +9,8 @@ def join_ids(a, b):
         c = '/'
     return a + c + b
 
+idregistry = {}
+
 class ODataProperty(object):
     def __init__(self, name, nav=False):
         self.name = name
@@ -56,9 +58,11 @@ class ODataObject(object):
                     setattr(self, name, None)
 
     def assign_ids(self, parent, ctx):
+        global idregistry
         if getattr(self, '_odata_id', None) is None:
             self._odata_id = join_ids(parent._odata_id, ctx)
             self.id = ctx
+            idregistry[self._odata_id] = self
         for prop in self._meta.properties.values():
             value = getattr(self, prop.python_name, None)
             if isinstance(value, ODataObject):
@@ -76,7 +80,9 @@ class ODataObject(object):
 class ODataCollection(ODataObject, list):
 
     def assign_ids(self, parent, ctx):
+        global idregistry
         self._odata_id = join_ids(parent._odata_id, ctx)
+        idregistry[self._odata_id] = self
         for key, value in enumerate(self):
             if isinstance(value, ODataObject):
                 value.assign_ids(self, str(key))
