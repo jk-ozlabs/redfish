@@ -79,10 +79,14 @@ class EntityType(object):
             parent_name = qualified_classname_to_python(self.parent)
         print "class %s(%s):" % (qualified_classname_to_python(self.name),
                 parent_name)
+        print
+        print '\tclass ODataProperties:'
+        if not self.properties or self.navigation_properties:
+            print '\t\tpass'
         for prop in self.properties:
-            print '\t%s = %s' % (prop.name.lower(), prop.render())
+            print '\t\t%s = %s' % (prop.name.lower(), prop.render())
         for prop in self.navigation_properties:
-            print '\t%s = %s' % (prop.name.lower(), prop.render())
+            print '\t\t%s = %s' % (prop.name.lower(), prop.render())
 
         print
         print '\tclass Meta:'

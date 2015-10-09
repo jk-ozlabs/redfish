@@ -44,18 +44,24 @@ class ODataObject(object):
     def _odata_init(self):
         self._meta = getattr(self, 'Meta')()
         self._meta.properties = collections.OrderedDict()
-        for name in dir(self):
-            if name == '_odata_id':
+        for name in dir(self.ODataProperties):
+            val = getattr(self.ODataProperties, name)
+
+            if not isinstance(val, ODataProperty):
                 continue
-            val = getattr(self, name)
-            if isinstance(val, ODataProperty):
-                self._meta.properties[name] = val
-                if isinstance(val, ODataCollectionProperty):
-                    collection = ODataCollection()
-                    collection._meta.type = val.collection_type
-                    setattr(self, name, collection)
-                else:
-                    setattr(self, name, None)
+
+            # add to our properties collection
+            self._meta.properties[name] = val
+
+            # set a default value if None exists
+            if name in dir(self):
+                continue
+            if isinstance(val, ODataCollectionProperty):
+                collection = ODataCollection()
+                collection._meta.type = val.collection_type
+                setattr(self, name, collection)
+            else:
+                setattr(self, name, None)
 
     def assign_ids(self, parent, ctx):
         global idregistry
@@ -96,6 +102,9 @@ class ODataCollection(ODataObject, list):
         }
 
     class Meta:
+        pass
+
+    class ODataProperties:
         pass
 
 def odata_json_encode(obj, context=None):
