@@ -107,6 +107,9 @@ class ODataCollection(ODataObject, list):
     class ODataProperties:
         pass
 
+class ODataAction(object):
+    pass
+
 def odata_json_encode(obj, context=None):
     def json_handler(obj):
         if isinstance(obj, ODataObject):
@@ -119,3 +122,9 @@ def odata_json_encode(obj, context=None):
         d.update({'@odata.context': '/redfish/v1/$metadata#' + context})
     d.update(obj.to_json_dict())
     return json.dumps(d, indent=2, default=json_handler) + '\n'
+
+def action(action_class):
+    def wrapper(fn):
+        print 'fn', fn, fn.func_closure
+        return fn
+    return wrapper

@@ -9,10 +9,15 @@ ns = {
 }
 
 types = {}
+actions = {}
 
 required_types = [
     'ServiceRoot.1.0.0.ServiceRoot',
     'ComputerSystem.1.0.0.ComputerSystem',
+]
+
+required_actions = [
+    'ComputerSystem.Reset',
 ]
 
 def qualified_classname_to_python(name):
@@ -49,6 +54,22 @@ class Property(object):
         if t.endswith('Collection'):
             prop.collection_type = t
         return prop
+
+class Action(object):
+    action_class = 'odata.ODataAction'
+
+    def __init__(self, name):
+        self.name = name
+
+    def render(self):
+        print 'class %s(%s):' % (
+                qualified_classname_to_python(self.name), self.action_class)
+        print '\tpass'
+
+    @classmethod
+    def parse(cls, namespace, elem):
+        action = cls(namespace + '.' + elem.get('Name'))
+        return action
 
 class EntityType(object):
     odata_class = 'odata.ODataObject'
@@ -115,6 +136,9 @@ def handle_dataservice(ds):
             et = EntityType.parse(schema_namespace, et)
 #et.merge(types.get(et.name, None))
             types[et.name] = et
+        for action in schema.xpath('edm:Action', namespaces=ns):
+            action = Action.parse(schema_namespace, action)
+            actions[action.name] = action
 
 
 
@@ -134,5 +158,8 @@ def main():
     for t in required_types:
         types[t].render()
         
+    for a in required_actions:
+        actions[a].render()
+
 if __name__ == '__main__':
     sys.exit(main())
