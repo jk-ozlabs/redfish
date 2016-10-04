@@ -1,0 +1,54 @@
+Sketches for an OpenBMC redfish implementation
+
+This repository contains some initial hacks for a redfish server on OpenBMC
+systems. There are a few components:
+
+ - create-models.py: given a set of Redfish schema definitions (ie, XML files),
+   this generates the base model definitions (basemodels.py). These base models
+   are the "raw" redfish objects - basically python defintions of the Redfish
+   schema objects. A server definition will want to subclass these to implement
+   actual models.
+
+   The models generated are defined by the 'required_types' and
+   'required_actions' lists in that file. The XML schema files provided on the
+   command line need to contain all required definitions (including subtypes)
+   for these required types.
+
+ - models.py: really basic implemetations of the redfish objects, providing
+   example implementations of the base models
+
+ - application.py: the application server definitions, using the werkzeug
+   application framework
+
+ - redfish.py: a wrapper program to run the application under a lightweight
+   web server (port 5000 on localhost)
+
+To create the base models (using metadata as a symlink to the metadata/
+directory in the DSP8010_1.0.0 distribution of the Redfish schema):
+
+    ./create-models.py \
+	  metadata/ServiceRoot.xml \
+	  metadata/Resource.xml \
+	  metadata/ComputerSystem.xml \
+	  > basemodels.py
+
+To run the test server:
+
+    ./redfish.py
+
+Then, the Redfish server is available on localhost:5000. For example:
+
+   http://localhost:5000/redfish/v1/
+   http://localhost:5000/redfish/v1/Systems/0
+
+Further steps:
+
+ - implement proper model backend behaviour in models.py, performing necessary
+   dbus-driven implementations
+
+ - proper integration of application server into existing OpenBMC
+   infrastructure.
+
+ - implement Redfish Actions properly
+
+ - proper suppport for collections, rather tha using pure id registry lookups
